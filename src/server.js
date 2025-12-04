@@ -31,6 +31,7 @@ if (process.env.NODE_ENV === 'development') {
 
 app.use('/api/auth', require('./routes/auth.routes'));
 app.use('/api/quotes', require('./routes/quote.routes'));
+app.use('/api/bookings', require('./routes/booking.routes'));
 
 app.get('/api/health', (req, res) => {
   res.status(200).json({

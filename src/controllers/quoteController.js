@@ -368,3 +368,71 @@ exports.submitQuotation = async (req, res) => {
     });
   }
 };
+
+/**
+ * ═══════════════════════════════════════════════════════════
+ * GET QUOTATION CALENDAR EVENTS
+ * ═══════════════════════════════════════════════════════════
+ *
+ * Returns quotations formatted for calendar display.
+ * Filters by date range to optimize performance.
+ *
+ * RESPONSE FORMAT:
+ * {
+ *   id: quote._id,
+ *   title: "Customer Name - Quote Request",
+ *   start: departureDate,
+ *   end: departureDate,
+ *   resource: {
+ *     type: 'quotation',
+ *     status: quote.status,
+ *     quote: full quote object
+ *   }
+ * }
+ */
+exports.getQuoteCalendarEvents = async (req, res) => {
+  try {
+    const { start, end } = req.query;
+
+    // Build date filter if provided
+    const filter = {};
+    if (start && end) {
+      filter.departureDate = {
+        $gte: new Date(start),
+        $lte: new Date(end)
+      };
+    }
+
+    // Fetch quotes within date range
+    const quotes = await QuoteRequest.find(filter)
+      .populate('user', 'firstName lastName email phone')
+      .sort({ departureDate: 1 });
+
+    // Transform to calendar event format
+    const events = quotes.map(quote => ({
+      id: quote._id,
+      title: `${quote.user.firstName} ${quote.user.lastName} - Quote Request`,
+      start: new Date(quote.departureDate),
+      end: new Date(quote.departureDate),
+      resource: {
+        type: 'quotation',
+        status: quote.status,
+        estimatedPrice: quote.estimatedPrice,
+        quote: quote
+      }
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: events.length,
+      data: events
+    });
+
+  } catch (error) {
+    console.error('[Quote] Get calendar events error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching quote calendar events'
+    });
+  }
+};
