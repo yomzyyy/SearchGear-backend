@@ -8,7 +8,8 @@ const {
   getQuoteById,
   getAllQuotes,
   updateQuote,
-  deleteQuote
+  deleteQuote,
+  submitQuotation
 } = require('../controllers/quoteController');
 
 router.post('/', protect, createQuote);
@@ -17,6 +18,7 @@ router.get('/:id', protect, getQuoteById);
 
 router.get('/admin/all', protect, authorize('admin'), getAllQuotes);
 router.patch('/admin/:id', protect, authorize('admin'), updateQuote);
+router.post('/admin/:id/submit', protect, authorize('admin'), submitQuotation);
 router.delete('/admin/:id', protect, authorize('admin'), deleteQuote);
 
 module.exports = router;
